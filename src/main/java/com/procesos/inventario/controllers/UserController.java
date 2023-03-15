@@ -18,6 +18,6 @@ public class UserController {
     }
     @PostMapping(value = "user")
     public Boolean saveUser(@RequestBody User user){
-        return userServiceImp.createUser(user);
+        return UserServiceImp.createUser(user);
     }
 }
