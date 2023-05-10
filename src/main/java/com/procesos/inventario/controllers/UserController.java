@@ -1,90 +1,87 @@
 package com.procesos.inventario.controllers;
 
 import com.procesos.inventario.models.User;
-import com.procesos.inventario.services.UserServiceImp;
+import com.procesos.inventario.services.UserService;
+import com.procesos.inventario.utils.ApiResponse;
+import com.procesos.inventario.utils.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
+@RequestMapping("/user")
 public class UserController {
+
     @Autowired
-    private UserServiceImp userServiceImp;
+    private UserService userService;
+    private ApiResponse apiResponse;
 
-    @GetMapping(value = "/user/{id}")
+    Map data = new HashMap<>();
+
+    @GetMapping(value = "/{id}")
     public ResponseEntity findUserById(@PathVariable Long id){
-        Map response = new HashMap();
+
+
+
         try {
-            return new ResponseEntity(userServiceImp.getUser(id), HttpStatus.OK);
-        }catch (Exception e){
-            response.put("status","404");
-            response.put("message","no se encontro el usuario");
-            return new ResponseEntity<>(response,HttpStatus.NOT_FOUND);
+            apiResponse = new ApiResponse(Constants.REGISTER_FOUND,userService.getUser(id));
+            return new ResponseEntity(apiResponse, HttpStatus.OK);
+        }catch(Exception e){
+            apiResponse = new ApiResponse(Constants.REGISTER_NOT_FOUND,"");
+            return new ResponseEntity<>(apiResponse,HttpStatus.NOT_FOUND);
         }
 
     }
-    @PostMapping(value = "/users")
+    @PostMapping (value = "")
     public ResponseEntity saveUser(@RequestBody User user){
-        Map response = new HashMap();
-             Boolean userResp = userServiceImp.createUser(user);
+        Boolean userResp = userService.createUser(user);
 
-             if (userResp == true) {
-                 response.put("status", "201");
-                 response.put("message", "Se creo el uruuario");
-                 return new ResponseEntity<>(response, HttpStatus.CREATED);
-             }
-             response.put("status","400");
-             response.put("message","Hubo un error al crear el usuario");
-             return new ResponseEntity(response, HttpStatus.BAD_REQUEST);
-
-
-    }
-
-    @GetMapping(value = "/users")
-    public ResponseEntity allUsers(){
-        Map response = new HashMap();
-        try {
-            return new ResponseEntity(userServiceImp.allUsers(), HttpStatus.OK);
-        }catch (Exception e) {
-            response.put("status", "404");
-            response.put("message", "no se encontro los usuarios");
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        if (userResp == true){
+            apiResponse = new ApiResponse(Constants.REGISTER_CREATED,"");
+            return new ResponseEntity<>(apiResponse,HttpStatus.CREATED);
         }
+        apiResponse = new ApiResponse(Constants.REGISTER_BAD,user);
+        return new ResponseEntity<>(apiResponse,HttpStatus.BAD_REQUEST);
     }
-
-    @PutMapping(value = "/user/{id}")
-    public ResponseEntity updateUser(@PathVariable Long id, @RequestBody User user) {
-        Map response = new HashMap();
-        Boolean userDB = userServiceImp.updateUser(id, user);
+    // TAREA
+    @GetMapping(value = "")
+    public ResponseEntity allUsers(){
         try {
-            if (userDB == null) {
+            apiResponse = new ApiResponse(Constants.REGISTER_LIST,userService.allUsers());
+            return new ResponseEntity(apiResponse, HttpStatus.OK);
+        }catch(Exception e){
+            apiResponse = new ApiResponse(Constants.REGISTER_NOT_FOUND,"");
+            return new ResponseEntity<>(apiResponse,HttpStatus.NOT_FOUND);
+        }
+ /*
+        @PutMapping(value = "/{id}")
+        public ResponseEntity updateUser(@PathVariable Long id, @RequestBody User user) {
+            Boolean userDB = userServiceImp.updateUser(id, user);
+            try {
+                if (userDB == null) {
+                    apiResponse = new ApiResponse(Constants.REGISTER_UPDATED,"");
+                    return new ResponseEntity(apiResponse, HttpStatus.BAD_REQUEST);
+                }
+                return new ResponseEntity(userServiceImp.getUser(id), HttpStatus.ACCEPTED);
+            } catch (Exception e) {
                 response.put("status", "201");
-                response.put("message", "se creo encontro usuarios");
+                response.put("message", "se encontro usuario");
                 return new ResponseEntity(response, HttpStatus.BAD_REQUEST);
             }
-            return new ResponseEntity(userServiceImp.getUser(id), HttpStatus.ACCEPTED);
-        } catch (Exception e) {
-            response.put("status", "201");
-            response.put("message", "se encontro usuario");
-            return new ResponseEntity(response, HttpStatus.BAD_REQUEST);
         }
+
+  */
+
     }
 
-    @PostMapping(value = "auth/login")
-    public ResponseEntity login(@RequestBody User user){
-        Map response = new HashMap();
-        try {
-            return new ResponseEntity(userServiceImp.login(user),HttpStatus.OK);
-        }catch (Exception e){
-            response.put("status", "404");
-            response.put("message", e.getMessage());
-            return new ResponseEntity(response, HttpStatus.BAD_REQUEST);
-        }
-    }
+
+
+
+
+
+
 }

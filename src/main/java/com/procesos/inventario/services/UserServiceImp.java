@@ -4,6 +4,7 @@ import com.procesos.inventario.models.User;
 import com.procesos.inventario.repository.UserRepository;
 import com.procesos.inventario.utils.JWTUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,6 +17,8 @@ public class UserServiceImp implements UserService {
 
     @Autowired
     private JWTUtil jwtutil;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public User getUser(Long id){
 
@@ -25,6 +28,7 @@ public class UserServiceImp implements UserService {
     @Override
     public Boolean createUser(User user) {
         try {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
             userRepository.save(user);
             return true;
         }catch (Exception e){
@@ -46,6 +50,7 @@ public class UserServiceImp implements UserService {
             userBD.setLastName(user.getLastName());
             userBD.setBirthday(user.getBirthday());
             userBD.setAddress(user.getAddress());
+            userBD.setPassword(passwordEncoder.encode(user.getPassword()));
             User userUp = userRepository.save(userBD);
             return true;
         }catch (Exception e){
@@ -61,7 +66,7 @@ public class UserServiceImp implements UserService {
             throw new RuntimeException("Usuario no encontrado!");
         }
 
-        if (!userBd.get().getPassword().equals(user.getPassword())){
+        if (!passwordEncoder.matches(user.getPassword(),userBd.get().getPassword())){
             throw new RuntimeException("La contraseña es incorrecta");
         }
         return jwtutil.create(String.valueOf(userBd.get().getId()),
